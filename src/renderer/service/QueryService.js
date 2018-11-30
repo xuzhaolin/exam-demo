@@ -24,7 +24,7 @@ export function saveExcelFile(filename) {
 
     try {
         let content = fs.readFileSync(filename);
-        fs.writeFileSync(path.join(__static, '/exam.xlsx'), content);
+        fs.writeFileSync(path.join(__static, 'exam.xlsx'), content);
         return loadExcelFile()
     } catch (e) {
         console.log(e);
@@ -48,7 +48,7 @@ export function saveExcelFileToLocal() {
         defaultPath: '~/exam.xlsx'
     }, (filePath) => {
         try {
-            let content = fs.readFileSync(path.join(__static, '/exam.xlsx'));
+            let content = fs.readFileSync(path.join(__static, 'exam.xlsx'));
             fs.writeFileSync(filePath, content);
         } catch (e) {
             window.alert('导出失败');
