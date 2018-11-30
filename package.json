@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "bootstrap": "^3.3.7",
     "element-ui": "^2.4.11",
     "js-xlsx": "^0.8.22",
     "nedb": "^1.8.0",
