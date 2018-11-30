@@ -1,9 +1,20 @@
 import XLSX from 'js-xlsx';
+import ti from 'xlsx';
 import fs from 'fs';
 import { remote } from 'electron';
-import path from 'path';
-// const dialog = require('electron').dialog;
-// const win = remote.getCurrentWindow();
+import db from '../datastore';
+
+export function loadUsersFromDb() {
+    return new Promise((resolve) => {
+        db.find({}, function(err, docs) {
+            if (err) {
+                resolve([])
+            } else {
+                resolve(docs)
+            }
+        })
+    });
+}
 
 export function loadExcelFile() {
     return new Promise((resolve) => {
@@ -20,15 +31,25 @@ export function loadExcelFile() {
 }
 
 
-export function saveExcelFile(filename) {
-
-    try {
+export function saveExcelFileToDB(filename) {
+    return new Promise((resolve, reject) => {
         let content = fs.readFileSync(filename);
-        fs.writeFileSync(path.join(__static, 'exam.xlsx'), content);
-        return loadExcelFile()
-    } catch (e) {
-        console.log(e);
-    }
+        let data = new Uint8Array(content);
+        let workbook = XLSX.read(data, { type: 'array' });
+        db.remove({}, { multi: true }, function(err) {
+            if (err) {
+                reject()
+            }
+            console.log(workbook.Sheets)
+            db.insert(XLSX.utils.sheet_to_json(workbook.Sheets['学生']), function(err, newDocs) {
+                if (err) {
+                    reject()
+                } else {
+                    resolve()
+                }
+            });
+        });
+    });
 }
 
 export function importExcelFile(callback) {
@@ -41,6 +62,28 @@ export function importExcelFile(callback) {
     }, callback)
 }
 
+export function dbToExcel(filePath) {
+    loadUsersFromDb().then((data) => {
+        let wb = ti.utils.book_new();
+        const new_ws_name = "学生";
+        let result = [];
+        data.forEach(item => {
+            result.push([item['姓名'], item['语文'], item['数学'], item['英语']]);
+        });
+
+        let ws_data = [
+            ['姓名', '语文', '数学', '英语'],
+            ...result
+        ];
+
+        console.log(ws_data);
+        let ws = ti.utils.aoa_to_sheet(ws_data);
+        ti.utils.book_append_sheet(wb, ws, new_ws_name);
+
+        ti.writeFile(wb, filePath);
+    })
+}
+
 
 export function saveExcelFileToLocal() {
     remote.dialog.showSaveDialog({
@@ -48,8 +91,7 @@ export function saveExcelFileToLocal() {
         defaultPath: '~/exam.xlsx'
     }, (filePath) => {
         try {
-            let content = fs.readFileSync(path.join(__static, 'exam.xlsx'));
-            fs.writeFileSync(filePath, content);
+           dbToExcel(filePath);
         } catch (e) {
             window.alert('导出失败');
         }

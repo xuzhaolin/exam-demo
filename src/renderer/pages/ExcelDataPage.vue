@@ -42,7 +42,13 @@
 </template>
 
 <script>
-    import {importExcelFile, loadExcelFile, saveExcelFile, saveExcelFileToLocal} from "../service/QueryService";
+    import {
+        importExcelFile,
+        loadExcelFile,
+        loadUsersFromDb,
+        saveExcelFileToDB,
+        saveExcelFileToLocal
+    } from "../service/QueryService";
 
     export default {
         methods: {
@@ -56,18 +62,20 @@
             }
         },
         created() {
-            loadExcelFile().then((data) => {
+            loadUsersFromDb().then((data) => {
                 this.users = data;
             })
         },
         methods: {
             importExcel() {
                importExcelFile((filenames) => {
-                  saveExcelFile(filenames[0]).then((data) => {
+                  saveExcelFileToDB(filenames[0]).then(() => {
                       window.alert('保存成功');
-                      this.users = data
+                      loadUsersFromDb().then((data) => {
+                          this.users = data;
+                      })
                   }).catch(() => {
-                      window.alert('保存失败');
+                      window.alert('保存失败')
                   })
                })
             },
