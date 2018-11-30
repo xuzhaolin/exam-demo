@@ -16,6 +16,18 @@ export function loadUsersFromDb() {
     });
 }
 
+export function searchUserInDB(name) {
+    return new Promise((resolve, reject) => {
+        db.findOne({'姓名': name}, function(err, doc){
+            if (err) {
+                reject()
+            } else {
+                resolve(doc)
+            }
+        })
+    })
+}
+
 export function loadExcelFile() {
     return new Promise((resolve) => {
         let file = new XMLHttpRequest();

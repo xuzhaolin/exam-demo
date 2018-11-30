@@ -39,6 +39,7 @@
     import NoResult from '@/components/NoResult';
     import Result from '@/components/Result';
     import {loadExcelFile} from "@/service/QueryService";
+    import {searchUserInDB} from "../service/QueryService";
     export default {
         components: {
             Query,
@@ -67,17 +68,10 @@
                 this.searchStatus = 1;
                 this.searchName = name;
                 this.searchKemu = kemu;
-                loadExcelFile().then((data) => {
-                    this._findUserInUsers(data);
-                }).catch((e) => {
-                    this.searchResult = -1;
-                    this.searchStatus = -1;
-                    console.error(e);
-                })
+                this._findUserInUsers();
             },
-            _findUserInUsers(users) {
-                let user = users.find((item) => item['姓名'] === this.searchName);
-                if (user) {
+            _findUserInUsers() {
+                searchUserInDB(this.searchName).then((user) => {
                     if (user[this.searchKemu]) {
                         this.searchStatus = 2;
                         this.searchResult = 1;
@@ -86,10 +80,10 @@
                         this.searchStatus = -1;
                         this.searchResult = -1;
                     }
-                } else {
+                }).catch(() => {
                     this.searchStatus = -1;
                     this.searchResult = -2;
-                }
+                });
             }
         }
     }
